@@ -1,0 +1,31 @@
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  avatar: String
+  videos: [Video!]!
+  likedVideos: [Video!]!
+  followers: [User!]!
+  following: [User!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  me: User
+  user(id: ID!): User
+  users(limit: Int, offset: Int): [User!]!
+}
+
+type Mutation {
+  signUp(username: String!, email: String!, password: String!): AuthPayload!
+  signIn(email: String!, password: String!): AuthPayload!
+  updateProfile(username: String, avatar: Upload): User!
+  followUser(userId: ID!): User!
+  unfollowUser(userId: ID!): User!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}

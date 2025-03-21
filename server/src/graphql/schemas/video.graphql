@@ -1,0 +1,14 @@
+type Video {
+  id: ID!
+  title: String!
+  description: String
+  url: String!
+  thumbnailUrl: String
+  user: User!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Mutation {
+  uploadVideo(file: Upload!, title: String!, description: String): Video!
+}
