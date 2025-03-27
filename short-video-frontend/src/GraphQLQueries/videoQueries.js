@@ -92,6 +92,37 @@ export const GET_RECOMMENDED_VIDEOS = gql`
   }
 `;
 
+//
+//
+//getRecommendedVideosNotLoggedIn(limit: Int!): [Video!]!
+
+export const GET_RECOMMENDED_VIDEOS_NOT_LOGGED_IN = gql`
+  query GetRecommendedVideosNotLoggedIn($limit: Int!) {
+    getRecommendedVideosNotLoggedIn(limit: $limit) {
+      id
+      title
+      videoUrl
+      thumbnailUrl
+      category {
+        name
+      }
+      tags
+      likeCount
+      views
+      commentsCount
+      savesCount
+      engagementRate
+      createdAt
+      user {
+        id
+        username
+        profilePicture
+        followerCount
+      }
+    }
+  }
+`;
+
 export const GET_FOLLOWING_VIDEOS = gql`
   query GetRecommendedVideos($limit: Int!) {
     getRecommendedVideos(limit: $limit) {

@@ -52,3 +52,24 @@ export const LOGIN_USER = gql`
     }
   }
 `;
+
+//
+// type DailyVideoStatistics {
+//     date: Date!
+//     views: Int!
+//     likes: Int!
+//     comments: Int!
+// }
+
+//getDailyVideoStatistics(startDate: Date!, endDate: Date!): [DailyVideoStatistics!]!
+
+export const GET_DAILY_VIDEO_STATISTICS = gql`
+  query GetDailyVideoStatistics($startDate: Date!, $endDate: Date!) {
+    getDailyVideoStatistics(startDate: $startDate, endDate: $endDate) {
+      date
+      views
+      likes
+      comments
+    }
+  }
+`;

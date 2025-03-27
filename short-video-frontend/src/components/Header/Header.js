@@ -204,7 +204,7 @@ const Header = () => {
     const { data: newNotificationData } = useSubscription(NEW_NOTIFICATION_SUBSCRIPTION);
 
     useEffect(() => {
-        if (notificationData) {
+        if (notificationData && user) {
             setNotifications(notificationData.notifications);
             const unreadNotifications = notificationData.notifications.filter(n => !n.read);
             setUnreadCount(unreadNotifications.length);
@@ -212,19 +212,19 @@ const Header = () => {
     }, [notificationData, user]);
 
     useEffect(() => {
-        if (newNotificationData && newNotificationData.newNotification) {
+        if (newNotificationData && newNotificationData.newNotification && user) {
             console.log(newNotificationData.newNotification)
             setNotifications(prevNotifications => [newNotificationData.newNotification, ...prevNotifications]);
             setUnreadCount(prevCount => prevCount + 1);
         }
-    }, [newNotificationData]);
+    }, [newNotificationData, user]);
 
     useEffect(() => {
-        if (notificationData) {
+        if (notificationData && user) {
             const unreadNotifications = notificationData.notifications.filter(n => !n.read);
             setUnreadCount(unreadNotifications.length);
         }
-    }, [notificationData]);
+    }, [notificationData, user]);
 
     const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);

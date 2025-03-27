@@ -1,29 +1,29 @@
 import models from "../models/index.js"
 
-const viewVideo = async (userId, videoId, viewCount) => {
+const viewVideo = async (userId, videoId) => {
     try {
         const existView = await models.View.findOne({
             user: userId,
             video: videoId
         });
-        if(existView){
-            console.log("exists " )
+        if (existView) {
+            console.log("exists ")
             await models.View.updateOne(
                 { _id: existView._id },
-                { $inc: { viewCount: viewCount } }
+                { $inc: { viewCount: 1 } }
             );
         } else {
-            console.log("not exists" )
+            console.log("not exists")
             const newView = new models.View({
                 user: userId,
                 video: videoId,
-                viewCount: viewCount
+                viewCount: 1
             });
             await newView.save();
         }
         await models.Video.findByIdAndUpdate(videoId, {
             $inc: {
-                views: viewCount
+                views: 1
             }
         });
         return true;

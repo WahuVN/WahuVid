@@ -4,8 +4,8 @@ import { Button } from "@mui/material"
 const getOauthGoogleUrl = () => {
     const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
     const options = {
-        redirect_uri: 'http://localhost:3000',
-        client_id: '813306665421-qqqh60v3kl0ufc8kc8gvjiu6ak6vavr5.apps.googleusercontent.com',
+        redirect_uri: 'http://localhost:3000/',
+        client_id: '742649047463-3ggr1prdl3hu2js43aia12d08dkfs9pn.apps.googleusercontent.com',
         access_type: 'offline',
         response_type: 'code',
         prompt: 'consent',

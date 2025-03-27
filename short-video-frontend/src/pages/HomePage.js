@@ -3,7 +3,7 @@ import { Box, CircularProgress, debounce, Typography } from '@mui/material';
 import ShortVideoComponent from '../components/VideoDetails';
 import VideoPlayer from '../components/VideoPlayer';
 import { useQuery } from '@apollo/client';
-import { GET_FOLLOWING_VIDEOS, GET_FRIEND_VIDEOS, GET_RECOMMENDED_VIDEOS } from '../GraphQLQueries/videoQueries';
+import { GET_FOLLOWING_VIDEOS, GET_FRIEND_VIDEOS, GET_RECOMMENDED_VIDEOS, GET_RECOMMENDED_VIDEOS_NOT_LOGGED_IN } from '../GraphQLQueries/videoQueries';
 import CommentContext from '../contexts/commentContext';
 import { useLocation } from 'react-router-dom';
 import UserContext from '../contexts/userContext';
@@ -29,7 +29,7 @@ const HomePage = () => {
     const isFriendsPage = location.pathname === '/friends';
 
     const { loading: videoLoading, error: videoError, data, fetchMore } = useQuery(
-        isFollowingPage ? GET_RECOMMENDED_VIDEOS : isFriendsPage ? GET_FRIEND_VIDEOS : GET_FOLLOWING_VIDEOS,
+        isFollowingPage ? user ? GET_RECOMMENDED_VIDEOS : GET_RECOMMENDED_VIDEOS_NOT_LOGGED_IN : isFriendsPage ? GET_FRIEND_VIDEOS : GET_FOLLOWING_VIDEOS,
         {
             variables: {
                 limit: VIDEOS_PER_PAGE

@@ -13,6 +13,7 @@ import messageService from '../services/messageService.js';
 import conversationService from '../services/conversationService.js';
 import notificationService from '../services/notificationService.js';
 import searchService from '../services/searchService.js';
+import statisticsService from '../services/statisticService.js';
 
 
 const resolvers = {
@@ -48,6 +49,9 @@ const resolvers = {
                 throw new Error(tokenError);
             }
             return videoService.getRecommendedVideos(context.user.id, limit);
+        },
+        getRecommendedVideosNotLoggedIn: async (_, { limit }) => {
+            return videoService.getRecommendedVideosNotLoggedIn(limit);
         },
         getFollowingVideos: async (_, { limit }, context) => {
             if (!context.user) {
@@ -106,6 +110,12 @@ const resolvers = {
         getVideosByCategory: async (_, { categoryId, page, limit }) => {
             return videoService.getVideosByCategory(categoryId, page, limit);
         },
+        getDailyVideoStatistics: async (_, { startDate, endDate }, context) => {
+            if (!context.user) {
+                throw new Error('You must be logged in to view daily video statistics');
+            }
+            return statisticsService.getDailyVideoStatistics(context.user.id, startDate, endDate);
+        },
     },
     Mutation: {
         registerUser: async (_, { username, email, password, avatarFile }) => {
@@ -126,7 +136,7 @@ const resolvers = {
                 const followers = await userService.getFollowers(context.user.id);
 
                 for (const follower of followers) {
-                    const {notification, user} = await notificationService.createVideoUploadNotification(video, context.user.id, follower.follower.toString());
+                    const { notification, user } = await notificationService.createVideoUploadNotification(video, context.user.id, follower.follower.toString());
 
                     if (notification) {
                         pubsub.publish(`NEW_NOTIFICATION_${follower.follower.toString()}`, {
@@ -163,14 +173,14 @@ const resolvers = {
             }
             return likeService.unlikeVideo(targetId, context.user.id);
         },
-        viewVideo: async (_, { videoId, viewCount }, context) => {
+        viewVideo: async (_, { videoId }, context) => {
             if (!context.user) {
                 throw new Error('You must be logged in to like a video');
             }
             if (context.tokenError) {
                 throw new Error(tokenError);
             }
-            return viewService.viewVideo(context.user.id, videoId, viewCount);
+            return viewService.viewVideo(context.user.id, videoId);
         },
         likeComment: async (_, { targetId }, context) => {
             if (!context.user) {
@@ -239,9 +249,9 @@ const resolvers = {
                 throw new Error(tokenError);
             }
             const res = followService.followUser(context.user.id, followingId);
-            if(res){
+            if (res) {
                 const { notification, user } = await notificationService.createNewFollowerNotification(context.user.id, followingId);
-                if(notification) {
+                if (notification) {
                     pubsub.publish(`NEW_NOTIFICATION_${user}`, {
                         newNotification: notification
                     })

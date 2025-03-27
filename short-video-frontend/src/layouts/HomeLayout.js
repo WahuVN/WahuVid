@@ -19,31 +19,31 @@ const HomeLayout = () => {
             <Container maxWidth="full" sx={{
                 // mr: -3.5
             }} disableGutters={isSmallScreen}>
-            <Grid container spacing={2}>
-                <Grid item xs={1} md={2} lg={2}
-                    sx={{
-                        display: { xs: 'none', md: 'block' },
-                        height: 'calc(100vh - 120px)',
-                        overflow: 'hidden'
-                    }}
-                >
-                    <Navigation />
-                </Grid>
-                <Grid item xs={11} md={['/', '/friends', '/following', '/messages', '/upload', '/login', '/register'].includes(location.pathname)?(isShowComments ? 7 : 8) : 10}
-                    sx={{
-                        height: 'calc(100vh - 64px)',
-                        // overflow: 'auto'
-                    }}
-                >
-                    <Outlet />
-                </Grid>
-                <Grid item xs={1} md={isShowComments ? 3 : 2}
-                    sx={{
-                        display: { xs: 'none', md: `${['/', '/friends', '/following', '/messages'].includes(location.pathname) ? 'block' :'none' }` },
-                        overflow: 'hidden'
-                    }}
-                >
-                    {isShowComments && videoId && <CommentList videoId={videoId} showCommentVideoId={setVideoId} setShowComments={setIsShowComments} />}
+                <Grid container spacing={2}>
+                    <Grid item xs={1} md={2} lg={2}
+                        sx={{
+                            display: { xs: 'none', md: 'block' },
+                            height: 'calc(100vh - 120px)',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        <Navigation />
+                    </Grid>
+                    <Grid item xs={11} md={['/', '/friends', '/following', '/messages', '/upload', '/login', '/register'].includes(location.pathname) ? (isShowComments ? 7 : 8) : 10}
+                        sx={{
+                            height: 'calc(100vh - 64px)',
+                            // overflow: 'auto'
+                        }}
+                    >
+                        <Outlet />
+                    </Grid>
+                    <Grid item xs={1} md={isShowComments ? 3 : 2}
+                        sx={{
+                            display: { xs: 'none', md: `${['/', '/friends', '/following', '/messages'].includes(location.pathname) ? 'block' : 'none'}` },
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {isShowComments && videoId && <CommentList videoId={videoId} showCommentVideoId={setVideoId} setShowComments={setIsShowComments} />}
                     </Grid>
                 </Grid>
             </Container>

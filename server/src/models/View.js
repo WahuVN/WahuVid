@@ -14,9 +14,13 @@ const viewSchema = new mongoose.Schema({
     viewCount: {
         type: Number,
         default: 0
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 
-viewSchema.index({user: 1, video: 1}, {unique: true});
+viewSchema.index({ user: 1, video: 1 }, { unique: true });
 
 export default mongoose.model('View', viewSchema);

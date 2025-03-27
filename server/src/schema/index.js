@@ -57,6 +57,12 @@ const typeDefs = gql`
     prevVideo: Video
   }
 
+  type DailyVideoStatistics {
+    date: Date!
+    views: Int!
+    likes: Int!
+    comments: Int!
+}
 
   type Comment {
     id: ID!
@@ -168,6 +174,7 @@ const typeDefs = gql`
     getVideoComments(videoId: ID!, page: Int!, limit: Int!): [Comment!]!
     getComments(videoId: ID!): [Comment!]!
     getRecommendedVideos(limit: Int!): [Video!]!
+    getRecommendedVideosNotLoggedIn(limit: Int!): [Video!]!
     searchVideos(keyword: String!): [Video!]!
     getCategories: [Category!]!
     getUserInteractions(userId: ID!): [UserInteraction!]!
@@ -206,6 +213,9 @@ const typeDefs = gql`
 
     # User Interactions
     getUserInteractionSummary(startDate: Date!, endDate: Date!): UserInteractionSummary!
+
+    # Video Statistics
+    getDailyVideoStatistics(startDate: Date!, endDate: Date!): [DailyVideoStatistics!]!
   }
 
   type Mutation {
@@ -215,7 +225,7 @@ const typeDefs = gql`
     uploadVideo(title: String!, videoFile: Upload!, thumbnailFile: Upload, category: ID, tags: [String!]): Video!
     likeVideo(targetId: ID!): Boolean!
     unlikeVideo(targetId: ID!): Boolean!
-    viewVideo(videoId: ID!, viewCount: Int!): Boolean!
+    viewVideo(videoId: ID!): Boolean!
     likeComment(targetId: ID!): Boolean!
     unlikeComment(targetId: ID!): Boolean!
     followUser(followingId: ID!): Boolean!
