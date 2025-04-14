@@ -1,0 +1,29 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "src/server.js",
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "src/**"
+                ]
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/graphql",
+            "dest": "/src/server.js",
+            "methods": [
+                "GET",
+                "POST",
+                "OPTIONS"
+            ]
+        },
+        {
+            "src": "/.*",
+            "dest": "/src/server.js"
+        }
+    ]
+}
