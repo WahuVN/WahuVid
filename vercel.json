@@ -1,17 +1,18 @@
 {
+    "version": 2,
     "builds": [
         {
             "src": "short-video-frontend/package.json",
             "use": "@vercel/static-build",
             "config": {
-                "distDir": "build"
+                "distDir": "public"
             }
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "short-video-frontend/build/$1"
+            "dest": "public/$1"
         }
     ]
 }

@@ -33,10 +33,9 @@
     },
     "scripts": {
         "start": "react-scripts start",
-        "build": "CI=false react-scripts build",
+        "build": "CI=false react-scripts build && mv build public",
         "test": "react-scripts test",
-        "eject": "react-scripts eject",
-        "postbuild": "mv build ../public"
+        "eject": "react-scripts eject"
     },
     "eslintConfig": {
         "extends": [
