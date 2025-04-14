@@ -76,7 +76,7 @@ const ShortVideoComponent = ({ video, onClose, initialTime, initialVolume }) => 
                     }}
                     controls
                 >
-                    <source src={handleLinkAWS(video.videoUrl)} type="video/mp4" />
+                    <source src={video.videoUrl} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
             </div>

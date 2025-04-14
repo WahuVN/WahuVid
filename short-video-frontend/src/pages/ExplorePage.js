@@ -140,9 +140,9 @@ const ExplorePage = () => {
                             isViewed={video.isViewed}
                             likes={video.likeCount}
                             views={video.views}
-                            thumbnailUrl={handleLinkAWS(video.thumbnailUrl)}
+                            thumbnailUrl={video.thumbnailUrl}
                             userAva={video.user.profilePicture}
-                            videoUrl={handleLinkAWS(video.videoUrl)}
+                            videoUrl={video.videoUrl}
                             isMuted={false}
                             onClick={() => {
                                 navigate(`/${video.user.username}/video/${video.id}`, {

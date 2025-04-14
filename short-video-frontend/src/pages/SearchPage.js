@@ -58,8 +58,8 @@ const SearchPage = () => {
                                 isViewed={item.isViewed}
                                 likes={item.likeCount}
                                 views={item.views}
-                                thumbnailUrl={handleLinkAWS(item.thumbnailUrl)}
-                                videoUrl={handleLinkAWS(item.videoUrl)}
+                                thumbnailUrl={item.thumbnailUrl}
+                                videoUrl={item.videoUrl}
                                 userAva={item.user.profilePicture}
                                 isMuted={false}
                                 onClick={() => {

@@ -396,8 +396,8 @@ const VideoPlayer = ({ video, onClick, videoStates }) => {
                 )}
                 <StyledVideo
                     ref={videoRef}
-                    src={handleLinkAWS(video.videoUrl)}
-                    poster={handleLinkAWS(video.thumbnailUrl)}
+                    src={video.videoUrl}
+                    poster={video.thumbnailUrl}
                     loop
                     playsInline
                     onLoadedData={handleVideoLoaded}

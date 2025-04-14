@@ -203,8 +203,8 @@ const UserProfile = () => {
                     {videos.map((video) => (
                         <Grid item xs={6} sm={4} md={4} lg={3} key={video.id}>
                             <VideoPreview
-                                videoUrl={handleLinkAWS(video.videoUrl)}
-                                thumbnailUrl={handleLinkAWS(video.thumbnailUrl)}
+                                videoUrl={video.videoUrl}
+                                thumbnailUrl={video.thumbnailUrl}
                                 views={video.views}
                                 likes={video.likeCount}
                                 isViewed={video.isViewed}

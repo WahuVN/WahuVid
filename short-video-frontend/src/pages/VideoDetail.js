@@ -30,7 +30,6 @@ import { LIKE_VIDEO, UNLIKE_VIDEO } from '../GraphQLQueries/likeQueries'; // Nh�
 import LikeAnimation from '../components/LikeAnimation'; // Nhập component animation khi thích video
 import CommentList from '../components/CommentList'; // Nhập component danh sách bình luận
 import LargeNumberDisplay from '../components/LargeNumberDisplay'; // Nhập component hiển thị số lớn
-import { handleLinkAWS } from '../utils/commonUtils';
 moment.locale('vi'); // Áp dụng ngôn ngữ tiếng Việt cho moment
 
 const DEFAULT_ASPECT_RATIO = 9 / 16; // Tỷ lệ khung hình mặc định của video (9:16)
@@ -464,7 +463,7 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
                                 left: 0,
                                 right: 0,
                                 bottom: 0,
-                                backgroundImage: `url(${handleLinkAWS(video.thumbnailUrl)})`,
+                                backgroundImage: `url(${video.thumbnailUrl})`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'center',
                                 '&::before': {
@@ -514,8 +513,8 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
                         >
                             <video
                                 ref={videoRef}
-                                src={handleLinkAWS(video?.videoUrl)}
-                                poster={handleLinkAWS(video?.thumbnailUrl)}
+                                src={video?.videoUrl}
+                                poster={video?.thumbnailUrl}
                                 onTimeUpdate={handleTimeUpdate}
                                 onSeeked={handleSeeked}
                                 onEnded={handleEnded}
