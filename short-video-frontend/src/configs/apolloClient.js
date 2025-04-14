@@ -6,48 +6,52 @@ import { getToken } from '../utils/tokenUtils';
 import createUploadLink from 'apollo-upload-client/createUploadLink.mjs';
 import { setContext } from '@apollo/client/link/context';
 
+
+const HTTP_URI = process.env.REACT_APP_BACKEND_URL || 'https://wahu-vid.vercel.app/graphql';
+const WS_URI = process.env.REACT_APP_BACKEND_WEBSOCKET_URI || 'ws://wahu-vid.vercel.app/graphql';
+
 const httpLink = createUploadLink({
-  uri: 'http://localhost:4000/graphql',
-  headers: {
-    'Apollo-Require-Preflight': 'true',
-  },
+    uri: HTTP_URI,
+    headers: {
+        'Apollo-Require-Preflight': 'true',
+    },
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token = getToken();
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `${token}` : "",
+    const token = getToken();
+    return {
+        headers: {
+            ...headers,
+            authorization: token ? `${token}` : "",
+        }
     }
-  }
 });
 
 const wsLink = new GraphQLWsLink(createClient({
-  url: 'ws://localhost:4000/graphql',
-  connectionParams: () => {
-    const token = getToken();
-    return {
-      authorization: token ? `${token}` : "",
-    };
-  },
+    url: WS_URI,
+    connectionParams: () => {
+        const token = getToken();
+        return {
+            authorization: token ? `${token}` : "",
+        };
+    },
 }));
 
 const splitLink = split(
-  ({ query }) => {
-    const definition = getMainDefinition(query);
-    return (
-      definition.kind === 'OperationDefinition' &&
-      definition.operation === 'subscription'
-    );
-  },
-  wsLink,
-  httpLink
+    ({ query }) => {
+        const definition = getMainDefinition(query);
+        return (
+            definition.kind === 'OperationDefinition' &&
+            definition.operation === 'subscription'
+        );
+    },
+    wsLink,
+    httpLink
 );
 
 const client = new ApolloClient({
-  link: authLink.concat(splitLink),
-  cache: new InMemoryCache()
+    link: authLink.concat(splitLink),
+    cache: new InMemoryCache()
 });
 
 export default client;
