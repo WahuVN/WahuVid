@@ -5,14 +5,14 @@
             "src": "short-video-frontend/package.json",
             "use": "@vercel/static-build",
             "config": {
-                "distDir": "public"
+                "distDir": "build"
             }
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "public/$1"
+            "dest": "build/$1"
         }
     ]
 }
