@@ -3,71 +3,75 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 
-dotenv.config(); // Load các biến môi trường từ file .env
+dotenv.config();
 
-// Khởi tạo client S3 với thông tin xác thực từ biến môi trường
+// Cấu hình S3 Client với path-style
 const s3Client = new S3Client({
-    region: process.env.AWS_REGION, // Khu vực AWS
+    region: process.env.AWS_REGION,
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID, // Mã truy cập AWS
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, // Khóa bí mật AWS
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
+    forcePathStyle: true, // Bắt buộc sử dụng path-style
 });
 
 /**
- * Hàm tải tệp lên S3
- * @param {Object} file - Tệp tin cần tải lên (dữ liệu từ form upload)
- * @param {string} folder - Thư mục trên S3 để lưu trữ (mặc định là "upload")
- * @returns {Object} - Kết quả tải lên từ AWS S3
+ * Tạo URL path-style thủ công
+ * @param {string} bucket - Tên bucket
+ * @param {string} key - Đường dẫn file
+ * @returns {string} - URL path-style
  */
+const generatePathStyleUrl = (bucket, key) => {
+    return `https://s3.${process.env.AWS_REGION}.amazonaws.com/${bucket}/${key}`;
+};
+
 const uploadToS3 = async (file, folder = 'upload') => {
     try {
         console.log(`Bắt đầu tải lên S3, thư mục: ${folder}`);
 
-        // Lấy thông tin tệp từ đối tượng file
         const { createReadStream, filename, mimetype } = await file;
-
-        // Tạo tên file duy nhất bằng UUID
         const key = `${folder}/${uuidv4()}-${filename}`;
         const stream = createReadStream();
 
-        console.log(`Đang tải lên tệp: ${filename}, Loại MIME: ${mimetype}`);
-
-        // Tiến hành tải tệp lên S3 bằng thư viện @aws-sdk/lib-storage
         const upload = new Upload({
             client: s3Client,
             params: {
-                Bucket: process.env.AWS_S3_BUCKET_NAME, // Tên bucket S3
-                Key: key, // Đường dẫn trong S3
-                Body: stream, // Nội dung tệp
-                ContentType: mimetype, // Loại tệp
-                // ACL: 'public-read' // Cấp quyền công khai nếu cần
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: key,
+                Body: stream,
+                ContentType: mimetype,
+                ACL: 'public-read'
             }
         });
 
-        // Chờ quá trình tải lên hoàn tất
         const result = await upload.done();
-        console.log(`Tải lên thành công. URL S3: ${result.Location}`);
 
-        return result;
+        // Tạo URL thủ công theo path-style
+        const location = generatePathStyleUrl(
+            process.env.AWS_S3_BUCKET_NAME,
+            key
+        );
+
+        console.log(`Tải lên thành công. URL S3: ${location}`);
+
+        return {
+            ...result,
+            Location: location // Ghi đè URL trả về
+        };
+
     } catch (error) {
         console.error("Lỗi khi tải tệp lên S3:", error);
         throw new Error(`Tải lên thất bại: ${error.message}`);
     }
 };
 
-/**
- * Hàm xóa tệp khỏi S3
- * @param {string} fileKey - Đường dẫn (Key) của tệp trong S3
- */
 const deleteFromS3 = async (fileKey) => {
     try {
         console.log(`Đang xóa tệp trên S3: ${fileKey}`);
 
-        // Gửi yêu cầu xóa file đến S3
         await s3Client.send(new DeleteObjectCommand({
-            Bucket: process.env.AWS_S3_BUCKET_NAME, // Tên bucket S3
-            Key: fileKey // Đường dẫn file trên S3
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: fileKey
         }));
 
         console.log("Xóa tệp thành công");
@@ -77,7 +81,6 @@ const deleteFromS3 = async (fileKey) => {
     }
 };
 
-// Xuất module để sử dụng ở nơi khác
 export default {
     uploadToS3,
     deleteFromS3,
