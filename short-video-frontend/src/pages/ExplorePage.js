@@ -203,7 +203,7 @@ const ExplorePage = () => {
                                 <Person sx={{
                                     height: 20
                                 }} />
-                                <LargeNumberDisplay number={video.user.followerCount * 12313} />
+                                <LargeNumberDisplay number={video.user.followerCount * 19} />
                             </Typography>
                         </Box>
                     </Grid>

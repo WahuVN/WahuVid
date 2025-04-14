@@ -240,7 +240,7 @@ const HomePage = () => {
     }
 
     if (videos.length === 0) {
-        return <Typography>No videos available.</Typography>;
+        return <Typography>Không thể hiện thị được Video</Typography>;
     }
 
     return (

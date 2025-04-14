@@ -1,6 +1,15 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\server",
+    "\\server\\src",
+    "\\server\\src\\graphql",
+    "\\server\\src\\graphql\\schemas",
+    "\\server\\src\\models",
+    "\\server\\src\\resolvers",
+    "\\server\\src\\services",
+    "\\server\\src\\utils",
+    "\\short-video-frontend"
   ],
   "PreviewInSolutionExplorer": false
 }

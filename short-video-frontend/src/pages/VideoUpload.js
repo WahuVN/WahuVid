@@ -145,15 +145,17 @@ const UploadVideo = () => {
     const handleAddTag = useCallback((newTag) => setTags(prev => [...prev, newTag]), []);
     const handleRemoveTag = useCallback((tagToRemove) => setTags(prev => prev.filter(tag => tag !== tagToRemove)), []);
 
+    // Hàm xử lý khi người dùng chọn file video
     const handleVideoChange = useCallback((event) => {
-        const file = event.target.files[0];
-        setVideoFile(file);
-        setVideoPreviewUrl(URL.createObjectURL(file));
-    }, []);
+        const file = event.target.files[0]; // Lấy file video đầu tiên từ sự kiện
+        setVideoFile(file); // Cập nhật state để lưu file video
+        setVideoPreviewUrl(URL.createObjectURL(file)); // Tạo URL tạm thời để xem trước video
+    }, []); // Mảng rỗng để đảm bảo hàm chỉ được tạo một lần, không thay đổi
 
+    // Hàm xử lý khi người dùng chọn file ảnh thumbnail
     const handleThumbnailChange = useCallback((event) => {
-        setThumbnailFile(event.target.files[0]);
-    }, []);
+        setThumbnailFile(event.target.files[0]); // Cập nhật state để lưu file ảnh thumbnail
+    }, []); // Mảng rỗng để đảm bảo hàm chỉ được tạo một lần, không thay đổi
 
     const handleSubmit = useCallback(async (event) => {
         event.preventDefault();

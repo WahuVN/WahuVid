@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react'; // Nhập các hook từ React
+import { useQuery, useMutation } from '@apollo/client'; // Nhập hook để thực hiện truy vấn và mutation từ Apollo Client
+import { useLocation, useNavigate, useParams } from 'react-router-dom'; // Nhập hook để điều hướng và lấy tham số từ URL
 import {
     Box,
     Typography,
@@ -13,159 +13,178 @@ import {
     useMediaQuery,
     useTheme,
     Divider
-} from '@mui/material';
+} from '@mui/material'; // Nhập các component từ Material-UI
 import {
     Bookmark,
     BookmarkBorder,
     Close,
-} from '@mui/icons-material';
-import { ChevronDown, ChevronUp, Heart, MessageSquareMore, Play, Send, Volume2, VolumeX, X } from 'lucide-react';
-import { FOLLOW_USER, UNFOLLOW_USER } from '../GraphQLQueries/followQueries';
-import moment from 'moment';
-import 'moment/locale/vi';
-import { SAVE_VIDEO, UNSAVE_VIDEO } from '../GraphQLQueries/saveQueries';
-import { VIEW_VIDEO } from '../GraphQLQueries/viewQueries';
-import { GET_VIDEO_DETAILS } from '../GraphQLQueries/videoQueries';
-import { LIKE_VIDEO, UNLIKE_VIDEO } from '../GraphQLQueries/likeQueries';
-import LikeAnimation from '../components/LikeAnimation';
-import CommentList from '../components/CommentList';
-import LargeNumberDisplay from '../components/LargeNumberDisplay';
-moment.locale('vi');
+} from '@mui/icons-material'; // Nhập icon từ Material-UI
+import { ChevronDown, ChevronUp, Heart, MessageSquareMore, Play, Send, Volume2, VolumeX, X } from 'lucide-react'; // Nhập icon từ Lucide
+import { FOLLOW_USER, UNFOLLOW_USER } from '../GraphQLQueries/followQueries'; // Nhập truy vấn GraphQL để follow/unfollow người dùng
+import moment from 'moment'; // Nhập thư viện moment để xử lý thời gian
+import 'moment/locale/vi'; // Đặt ngôn ngữ moment thành tiếng Việt
+import { SAVE_VIDEO, UNSAVE_VIDEO } from '../GraphQLQueries/saveQueries'; // Nhập truy vấn để lưu/hủy lưu video
+import { VIEW_VIDEO } from '../GraphQLQueries/viewQueries'; // Nhập truy vấn để ghi nhận lượt xem video
+import { GET_VIDEO_DETAILS } from '../GraphQLQueries/videoQueries'; // Nhập truy vấn để lấy chi tiết video
+import { LIKE_VIDEO, UNLIKE_VIDEO } from '../GraphQLQueries/likeQueries'; // Nhập truy vấn để thích/bỏ thích video
+import LikeAnimation from '../components/LikeAnimation'; // Nhập component animation khi thích video
+import CommentList from '../components/CommentList'; // Nhập component danh sách bình luận
+import LargeNumberDisplay from '../components/LargeNumberDisplay'; // Nhập component hiển thị số lớn
+moment.locale('vi'); // Áp dụng ngôn ngữ tiếng Việt cho moment
 
-const DEFAULT_ASPECT_RATIO = 9 / 16;
+const DEFAULT_ASPECT_RATIO = 9 / 16; // Tỷ lệ khung hình mặc định của video (9:16)
 
+// Component trang chi tiết video, nhận hai hàm callback từ parent component
 const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUserParent = () => { } }) => {
-    const { id, userId } = useParams();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const [videoSize, setVideoSize] = useState({ width: 3000, height: 3000 });
-    const [localLikeCount, setLocalLikeCount] = useState(0);
-    const [localSavesCount, setLocalSavesCount] = useState(0);
-    const [localCommentsCount, setLocalCommentsCount] = useState(0);
-    const [localIsLiked, setLocalIsLiked] = useState(false);
-    const [localIsFollowed, setLocalIsFollowed] = useState(false);
-    const [localIsSaved, setLocalIsSaved] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
-    const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-    const videoRef = useRef(null);
-    const videoContainerRef = useRef(null);
-    const touchStartY = useRef(null);
-    const lastScrollTime = useRef(0);
+    const { id, userId } = useParams(); // Lấy ID video và ID người dùng từ URL
+    const theme = useTheme(); // Lấy theme từ Material-UI
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Kiểm tra xem thiết bị có phải mobile không
+    const [videoSize, setVideoSize] = useState({ width: 3000, height: 3000 }); // State lưu kích thước video
+    const [localLikeCount, setLocalLikeCount] = useState(0); // State lưu số lượt thích cục bộ
+    const [localSavesCount, setLocalSavesCount] = useState(0); // State lưu số lượt lưu cục bộ
+    const [localCommentsCount, setLocalCommentsCount] = useState(0); // State lưu số bình luận cục bộ
+    const [localIsLiked, setLocalIsLiked] = useState(false); // State kiểm tra video đã được thích chưa
+    const [localIsFollowed, setLocalIsFollowed] = useState(false); // State kiểm tra đã follow người dùng chưa
+    const [localIsSaved, setLocalIsSaved] = useState(false); // State kiểm tra video đã được lưu chưa
+    const [isMuted, setIsMuted] = useState(false); // State kiểm tra video có tắt tiếng không
+    const [isVideoLoaded, setIsVideoLoaded] = useState(false); // State kiểm tra video đã tải xong chưa
+    const videoRef = useRef(null); // Ref tham chiếu đến thẻ <video>
+    const videoContainerRef = useRef(null); // Ref tham chiếu đến container của video
+    const touchStartY = useRef(null); // Ref lưu vị trí Y khi bắt đầu chạm (dùng cho mobile)
+    const lastScrollTime = useRef(0); // Ref lưu thời gian cuộn cuối cùng
 
-    const navigate = useNavigate();
-    const location = useLocation();
+    const navigate = useNavigate(); // Hook để điều hướng trang
+    const location = useLocation(); // Hook để lấy thông tin vị trí URL hiện tại
 
+    // Truy vấn chi tiết video từ server bằng GraphQL
     const { data: videoData, loading: videoLoading, error: videoError } = useQuery(GET_VIDEO_DETAILS, {
-        variables: { id },
+        variables: { id }, // Truyền ID video vào truy vấn
     });
 
-    const [likeVideo] = useMutation(LIKE_VIDEO);
-    const [unlikeVideo] = useMutation(UNLIKE_VIDEO);
-    const [saveVideo] = useMutation(SAVE_VIDEO);
-    const [unsaveVideo] = useMutation(UNSAVE_VIDEO);
-    const [followUser] = useMutation(FOLLOW_USER);
-    const [unfollowUser] = useMutation(UNFOLLOW_USER);
-    const [viewVideo] = useMutation(VIEW_VIDEO);
-    const [localViews, setLocalViews] = useState(0);
-    const [showLikeAnimation, setShowLikeAnimation] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
-    const doubleClickTimeoutRef = useRef(null);
-    const timeWatchedRef = useRef(0);
-    const lastUpdateTimeRef = useRef(0);
-    const viewCountedRef = useRef(false);
+    // Khai báo các mutation để thực hiện các hành động
+    const [likeVideo] = useMutation(LIKE_VIDEO); // Mutation thích video
+    const [unlikeVideo] = useMutation(UNLIKE_VIDEO); // Mutation bỏ thích video
+    const [saveVideo] = useMutation(SAVE_VIDEO); // Mutation lưu video
+    const [unsaveVideo] = useMutation(UNSAVE_VIDEO); // Mutation hủy lưu video
+    const [followUser] = useMutation(FOLLOW_USER); // Mutation follow người dùng
+    const [unfollowUser] = useMutation(UNFOLLOW_USER); // Mutation bỏ follow người dùng
+    const [viewVideo] = useMutation(VIEW_VIDEO); // Mutation ghi nhận lượt xem video
+    const [localViews, setLocalViews] = useState(0); // State lưu số lượt xem cục bộ
+    const [showLikeAnimation, setShowLikeAnimation] = useState(false); // State kiểm tra hiển thị animation thích
+    const [isPlaying, setIsPlaying] = useState(false); // State kiểm tra video đang phát không
+    const [isVisible, setIsVisible] = useState(false); // State kiểm tra video có nằm trong tầm nhìn không
+    const doubleClickTimeoutRef = useRef(null); // Ref lưu timeout để xử lý double-click
+    const timeWatchedRef = useRef(0); // Ref lưu tổng thời gian đã xem video
+    const lastUpdateTimeRef = useRef(0); // Ref lưu thời gian cập nhật cuối cùng
+    const viewCountedRef = useRef(false); // Ref kiểm tra lượt xem đã được đếm chưa
 
+    // Hàm thử tự động phát video
     const attemptAutoplay = () => {
-        const playPromise = videoRef.current.play();
+        const playPromise = videoRef.current.play(); // Thử phát video
         if (playPromise !== undefined) {
             playPromise.then(() => {
-                setIsPlaying(true);
+                setIsPlaying(true); // Nếu phát thành công, cập nhật trạng thái
             }).catch(error => {
-                console.warn("Autoplay was prevented:", error);
-                setIsPlaying(false);
+                console.warn("Autoplay was prevented:", error); // Nếu thất bại, ghi log lỗi
+                setIsPlaying(false); // Cập nhật trạng thái không phát
             });
         }
     };
 
+    // Effect xử lý tự động phát hoặc tạm dừng video dựa trên trạng thái tải và tầm nhìn
     useEffect(() => {
         if (isVideoLoaded && isVisible) {
-            attemptAutoplay();
+            attemptAutoplay(); // Nếu video đã tải và nằm trong tầm nhìn, thử phát
         } else if (videoRef.current) {
-            videoRef.current.pause();
-            setIsPlaying(false);
+            videoRef.current.pause(); // Nếu không, tạm dừng video
+            setIsPlaying(false); // Cập nhật trạng thái
         }
     }, [isVideoLoaded, isVisible]);
 
+    // Hàm xử lý khi video tải xong
     const handleVideoLoaded = () => {
-        setIsVideoLoaded(true);
+        setIsVideoLoaded(true); // Đánh dấu video đã tải xong
         if (isVisible) {
-            attemptAutoplay();
+            attemptAutoplay(); // Nếu video trong tầm nhìn, thử phát
         }
     };
 
+    // Effect thiết lập IntersectionObserver để kiểm tra video có trong tầm nhìn không
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
-                setIsVisible(entry.isIntersecting);
+                setIsVisible(entry.isIntersecting); // Cập nhật trạng thái khi video xuất hiện trong tầm nhìn
             },
-            { threshold: 0.6 }
+            { threshold: 0.6 } // Ngưỡng 60% video phải xuất hiện để được coi là "visible"
         );
 
         return () => {
             if (videoRef.current) {
-                observer.unobserve(videoRef.current);
+                observer.unobserve(videoRef.current); // Hủy theo dõi khi component unmount
             }
         };
     }, []);
 
+    // Hàm xử lý khi nhấp vào video (play/pause hoặc thích)
     const handleVideoClick = (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Ngăn hành vi mặc định
         if (doubleClickTimeoutRef.current === null) {
+            // Nếu chưa có timeout (single click), đặt timeout để kiểm tra play/pause
             doubleClickTimeoutRef.current = setTimeout(() => {
                 doubleClickTimeoutRef.current = null;
                 if (videoRef.current.paused) {
-                    videoRef.current.play();
+                    videoRef.current.play(); // Nếu đang dừng, phát video
                 } else {
-                    videoRef.current.pause();
+                    videoRef.current.pause(); // Nếu đang phát, dừng video
                 }
-            }, 300);
+            }, 300); // Timeout 300ms để phân biệt single/double click
         } else {
-            clearTimeout(doubleClickTimeoutRef.current);
+            // Nếu có timeout (double click), xử lý hành động thích video
+            clearTimeout(doubleClickTimeoutRef.current); // Xóa timeout cũ
             doubleClickTimeoutRef.current = null;
-            handleLikeVideo();
-            setShowLikeAnimation(true);
-            setTimeout(() => setShowLikeAnimation(false), 1000);
+            handleLikeVideo(); // Gọi hàm thích video
+            setShowLikeAnimation(true); // Hiển thị animation thích
+            setTimeout(() => setShowLikeAnimation(false), 1000); // Tắt animation sau 1 giây
         }
     };
 
-
+    // Hàm reset trạng thái xem video
     const resetViewState = () => {
-        timeWatchedRef.current = 0;
-        lastUpdateTimeRef.current = 0;
-        viewCountedRef.current = false;
+        timeWatchedRef.current = 0; // Đặt lại thời gian xem về 0
+        lastUpdateTimeRef.current = 0; // Đặt lại thời gian cập nhật cuối về 0
+        viewCountedRef.current = false; // Đặt lại trạng thái đếm lượt xem
     };
 
     const handleTimeUpdate = () => {
+        // Kiểm tra xem phần tử video có tồn tại không
         if (videoRef.current) {
+            // Lấy thời gian hiện tại của video (giây)
             const currentTime = videoRef.current.currentTime;
+            // Lấy tổng thời lượng của video (giây)
             const duration = videoRef.current.duration;
+            // Tính khoảng thời gian đã trôi qua kể từ lần cập nhật cuối
             const timeElapsed = currentTime - lastUpdateTimeRef.current;
+
+            // Nếu thời gian trôi qua hợp lệ (lớn hơn 0 và nhỏ hơn 1 giây), cộng vào tổng thời gian xem
             if (timeElapsed > 0 && timeElapsed < 1) {
-                timeWatchedRef.current += timeElapsed;
+                timeWatchedRef.current += timeElapsed; // Cập nhật tổng thời gian đã xem
             }
+
+            // Cập nhật thời điểm cuối cùng bằng thời gian hiện tại
             lastUpdateTimeRef.current = currentTime;
 
-            if (!viewCountedRef.current && (timeWatchedRef.current >= duration / 2 || timeWatchedRef.current >= 90)) {
-                handleVideoView();
-                viewCountedRef.current = true;
+            // Kiểm tra nếu lượt xem chưa được đếm và đã xem đủ điều kiện (1/4 thời lượng hoặc 90 giây)
+            if (!viewCountedRef.current && (timeWatchedRef.current >= duration / 4 || timeWatchedRef.current >= 90)) {
+                handleVideoView(); // Gọi hàm để đánh dấu lượt xem
+                viewCountedRef.current = true; // Đặt cờ để không đếm lại
             }
 
+            // Nếu video gần kết thúc (còn dưới 1 giây), reset trạng thái
             if (currentTime >= duration - 1) {
-                resetViewState();
+                resetViewState(); // Gọi hàm reset trạng thái
             }
         }
     };
-
     const handleSeeked = () => {
         lastUpdateTimeRef.current = videoRef.current.currentTime;
     };
