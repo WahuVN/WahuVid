@@ -7,6 +7,8 @@ const UserReducer = (current, action) => {
             localStorage.removeItem("user");
             localStorage.removeItem("token");
             return null;
+        default:
+            return current;
     }
     return current;
 }
