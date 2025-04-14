@@ -15,6 +15,16 @@ import notificationService from '../services/notificationService.js'; // Nhập 
 import searchService from '../services/searchService.js'; // Nhập dịch vụ xử lý tìm kiếm
 import statisticsService from '../services/statisticService.js'; // Nhập dịch vụ xử lý thống kê
 
+const handleLinkAWS = (url) => {
+    if (url) {
+        if (url.includes('https://locshortvideo.com')) {
+            const newUrl = url.replace("https://locshortvideo.com.s3.ap-southeast-1.amazonaws.com/", "https://s3.ap-southeast-1.amazonaws.com/locshortvideo.com/");
+            return newUrl;
+        }
+        return url;
+    }
+    return null;
+}
 const resolvers = { // Định nghĩa các resolver cho GraphQL
     Upload: GraphQLUpload, // Gán GraphQLUpload cho kiểu Upload
     Query: { // Các truy vấn GraphQL
@@ -324,6 +334,9 @@ const resolvers = { // Định nghĩa các resolver cho GraphQL
                 following: parent._id
             });
             return !!follower; // Trả về true nếu có, false nếu không
+        },
+        profilePicture: (parent, _, context) => { // Lấy ảnh đại diện của người dùng
+            return handleLinkAWS(parent.profilePicture); // Gọi hàm xử lý đường dẫn ảnh
         }
     },
     Video: { // Resolver cho đối tượng Video
@@ -356,6 +369,12 @@ const resolvers = { // Định nghĩa các resolver cho GraphQL
         },
         prevVideo: async (parent, _) => { // Lấy video trước đó
             return videoService.getPrevUserVideo(parent.createdAt, parent.user._id); // Gọi dịch vụ lấy video trước đó
+        },
+        videoUrl: (parent, _) => { // Lấy đường dẫn video
+            return handleLinkAWS(parent.videoUrl); // Gọi hàm xử lý đường dẫn video
+        },
+        thumbnailUrl: (parent, _) => { // Lấy đường dẫn ảnh thu nhỏ
+            return handleLinkAWS(parent.thumbnailUrl); // Gọi hàm xử lý đường dẫn ảnh
         },
     },
     Comment: { // Resolver cho đối tượng Comment

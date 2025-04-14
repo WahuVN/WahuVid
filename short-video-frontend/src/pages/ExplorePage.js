@@ -10,6 +10,7 @@ import HashtagDisplay from '../components/HashtagDisplay';
 import LargeNumberDisplay from '../components/LargeNumberDisplay';
 import { Person } from '@mui/icons-material';
 import { GET_VIDEOS_BY_CATEGORY } from '../GraphQLQueries/videoQueries';
+import { handleLinkAWS } from '../utils/commonUtils';
 
 
 const ExplorePage = () => {
@@ -139,9 +140,9 @@ const ExplorePage = () => {
                             isViewed={video.isViewed}
                             likes={video.likeCount}
                             views={video.views}
-                            thumbnailUrl={video.thumbnailUrl}
+                            thumbnailUrl={handleLinkAWS(video.thumbnailUrl)}
                             userAva={video.user.profilePicture}
-                            videoUrl={video.videoUrl}
+                            videoUrl={handleLinkAWS(video.videoUrl)}
                             isMuted={false}
                             onClick={() => {
                                 navigate(`/${video.user.username}/video/${video.id}`, {

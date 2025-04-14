@@ -8,6 +8,7 @@ import { FOLLOW_USER, UNFOLLOW_USER } from '../GraphQLQueries/followQueries';
 import { GET_USER_PROFILE } from '../GraphQLQueries/userQueries';
 import { GET_USER_VIDEO } from '../GraphQLQueries/videoQueries';
 import { Message } from '@mui/icons-material';
+import { handleLinkAWS } from '../utils/commonUtils';
 
 
 const VIDEOS_PER_PAGE = 12;
@@ -202,8 +203,8 @@ const UserProfile = () => {
                     {videos.map((video) => (
                         <Grid item xs={6} sm={4} md={4} lg={3} key={video.id}>
                             <VideoPreview
-                                videoUrl={video.videoUrl}
-                                thumbnailUrl={video.thumbnailUrl}
+                                videoUrl={handleLinkAWS(video.videoUrl)}
+                                thumbnailUrl={handleLinkAWS(video.thumbnailUrl)}
                                 views={video.views}
                                 likes={video.likeCount}
                                 isViewed={video.isViewed}
