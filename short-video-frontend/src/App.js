@@ -21,6 +21,7 @@ import ExplorePage from './pages/ExplorePage';
 import BulkUploadVideo from './pages/BulkUploadVideo';
 import { saveToken } from './utils/tokenUtils';
 import CreatorStats from './pages/CreatorStats';
+import Followers from './components/Followers';
 
 function useAuth() {
     const [searchParams] = useSearchParams();
@@ -179,6 +180,11 @@ function AuthenticatedApp() {
                         <Route path="creator-tools" element={
                             <ProtectedRoute>
                                 <CreatorStats />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/:userId/followers" element={
+                            <ProtectedRoute>
+                                <Followers />
                             </ProtectedRoute>
                         } />
                     </Route>

@@ -73,3 +73,18 @@ export const GET_DAILY_VIDEO_STATISTICS = gql`
     }
   }
 `;
+
+export const GET_FOLLOWERS_BY_USER_ID = gql`
+  query getFollowersByUserId($userId: ID!) {
+    getFollowersByUserId(userId: $userId) {
+        createdAt
+        id
+        email
+        followerCount
+        followingCount
+        isFollowed
+        profilePicture
+        username
+    }
+  }
+`;

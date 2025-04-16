@@ -187,6 +187,7 @@ const typeDefs = gql`
     getFriendVideos(limit: Int): [Video!]!
     search(query: String!, page: Int, limit: Int): SearchResult!
     getVideosByCategory(categoryId: ID!, page: Int, limit: Int): [Video!]!
+    getFollowersByUserId(userId: ID!): [User!]!
     # User Management
     getAllUsers(page: Int, limit: Int): UserPaginatedResult!
     getUsersByRegistrationDate(startDate: Date!, endDate: Date!, page: Int, limit: Int): UserPaginatedResult!

@@ -110,9 +110,16 @@ const getUserById = async (userIdInput) => { // Hàm lấy người dùng theo I
 };
 
 const getFollowers = async (userId) => { // Hàm lấy danh sách người theo dõi
-    return await models.Follow.find({ // Tìm tất cả bản ghi Follow với following là userId
-        following: userId
+    const user = await models.User.findOne({
+        username: userId
+    }); // Tìm người dùng theo ID
+    const follows = await models.Follow.find({ // Tìm tất cả bản ghi Follow với following là userId
+        following: user._id
     });
+    const followers = await models.User.find({ // Tìm tất cả người dùng theo ID trong danh sách follows
+        _id: { $in: follows.map(follow => follow.follower) } // Lấy ID của người dùng theo dõi
+    });
+    return followers; // Trả về danh sách người theo dõi
 };
 
 export default { // Xuất các hàm dưới dạng object

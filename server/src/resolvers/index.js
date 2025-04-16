@@ -125,6 +125,15 @@ const resolvers = { // Định nghĩa các resolver cho GraphQL
             }
             return statisticsService.getDailyVideoStatistics(context.user.id, startDate, endDate); // Gọi dịch vụ lấy thống kê
         },
+        getFollowersByUserId: async (_, { userId }) => { // Truy vấn danh sách người theo dõi của người dùng
+            // if (!context.user) { // Kiểm tra đăng nhập
+            //     throw new Error('Bạn phải đăng nhập để xem danh sách người theo dõi'); // Ném lỗi nếu chưa đăng nhập
+            // }
+            // if (context.tokenError) { // Kiểm tra lỗi token
+            //     throw new Error(context.tokenError); // Ném lỗi nếu có lỗi token
+            // }
+            return userService.getFollowers(userId); // Gọi dịch vụ lấy danh sách người theo dõi
+        },
     },
     Mutation: { // Các thay đổi dữ liệu GraphQL
         registerUser: async (_, { username, email, password, avatarFile }) => { // Đăng ký người dùng mới

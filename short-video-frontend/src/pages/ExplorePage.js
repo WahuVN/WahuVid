@@ -10,7 +10,6 @@ import HashtagDisplay from '../components/HashtagDisplay';
 import LargeNumberDisplay from '../components/LargeNumberDisplay';
 import { Person } from '@mui/icons-material';
 import { GET_VIDEOS_BY_CATEGORY } from '../GraphQLQueries/videoQueries';
-import { handleLinkAWS } from '../utils/commonUtils';
 
 
 const ExplorePage = () => {

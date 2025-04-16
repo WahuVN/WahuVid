@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { Box, Typography, CircularProgress, Grid, Card, Container, Avatar, Button, useTheme } from '@mui/material';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import VideoPreview from './VideoPreview';
 import { debounce } from 'lodash';
 import { FOLLOW_USER, UNFOLLOW_USER } from '../GraphQLQueries/followQueries';
 import { GET_USER_PROFILE } from '../GraphQLQueries/userQueries';
 import { GET_USER_VIDEO } from '../GraphQLQueries/videoQueries';
 import { Message } from '@mui/icons-material';
-import { handleLinkAWS } from '../utils/commonUtils';
 
 
 const VIDEOS_PER_PAGE = 12;
@@ -127,7 +126,15 @@ const UserInfo = ({ userId }) => {
                     {user.followingCount} Đang theo dõi
                 </Typography>
                 <Typography>
-                    {localFollowerCount} Người theo dõi
+                    <Link to={`/${user.username}/followers`} style={{
+                        color: '#333',
+                        textDecoration: 'none',
+                        '&:hover': {
+                            textDecoration: 'underline'
+                        }
+                    }}>
+                        {localFollowerCount} Người theo dõi
+                    </Link>
                 </Typography>
             </Box>
         </Card>
