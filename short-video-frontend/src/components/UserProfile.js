@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { Box, Typography, CircularProgress, Grid, Card, Container, Avatar, Button, useTheme } from '@mui/material';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -8,11 +8,13 @@ import { FOLLOW_USER, UNFOLLOW_USER } from '../GraphQLQueries/followQueries';
 import { GET_USER_PROFILE } from '../GraphQLQueries/userQueries';
 import { GET_USER_VIDEO } from '../GraphQLQueries/videoQueries';
 import { Message } from '@mui/icons-material';
+import UserContext from '../contexts/userContext';
 
 
 const VIDEOS_PER_PAGE = 12;
 
 const UserInfo = ({ userId }) => {
+    const { user: contextUser } = useContext(UserContext);
     const theme = useTheme();
     const { data } = useQuery(GET_USER_PROFILE, {
         variables: { userId },
@@ -89,41 +91,53 @@ const UserInfo = ({ userId }) => {
                         {user.email}
                     </Typography>
                     <Box>
-                        <Button
-                            variant={localIsFollowed ? 'outlined' : 'contained'}
-                            sx={{
-                                backgroundColor: localIsFollowed ? 'transparent' : theme.palette.primary.main,
-                                color: localIsFollowed ? theme.palette.primary.main : theme.palette.primary.contrastText,
-                                '&:hover': {
-                                    backgroundColor: localIsFollowed ? theme.palette.primary.light : theme.palette.primary.dark,
-                                },
-                                maxWidth: '200px',
-                                mr: 1,
-                            }}
-                            onClick={localIsFollowed ? handleUnfollowUser : handleFollowUser}
-                        >
-                            {localIsFollowed ? 'Hủy theo dõi' : 'Theo dõi'}
-                        </Button>
-                        <Button
-                            variant={'contained'}
-                            sx={{
-                                backgroundColor: theme.palette.primary.main,
-                                color: theme.palette.primary.contrastText,
-                                '&:hover': {
-                                    backgroundColor: theme.palette.primary.dark,
-                                },
-                                maxWidth: '200px',
-                            }}
-                            onClick={startConversation}
-                        >
-                            <Message />
-                        </Button>
+                        {contextUser?.username !== user.username && (
+                            <>
+                                <Button
+                                    variant={localIsFollowed ? 'outlined' : 'contained'}
+                                    sx={{
+                                        backgroundColor: localIsFollowed ? 'transparent' : theme.palette.primary.main,
+                                        color: localIsFollowed ? theme.palette.primary.main : theme.palette.primary.contrastText,
+                                        '&:hover': {
+                                            backgroundColor: localIsFollowed ? theme.palette.primary.light : theme.palette.primary.dark,
+                                        },
+                                        maxWidth: '200px',
+                                        mr: 1,
+                                    }}
+                                    onClick={localIsFollowed ? handleUnfollowUser : handleFollowUser}
+                                >
+                                    {localIsFollowed ? 'Hủy theo dõi' : 'Theo dõi'}
+                                </Button>
+                                <Button
+                                    variant={'contained'}
+                                    sx={{
+                                        backgroundColor: theme.palette.primary.main,
+                                        color: theme.palette.primary.contrastText,
+                                        '&:hover': {
+                                            backgroundColor: theme.palette.primary.dark,
+                                        },
+                                        maxWidth: '200px',
+                                    }}
+                                    onClick={startConversation}
+                                >
+                                    <Message />
+                                </Button>
+                            </>
+                        )}
                     </Box>
                 </Box>
             </Box>
             <Box sx={{ display: 'flex', mt: 2 }}>
                 <Typography sx={{ mr: 2 }}>
-                    {user.followingCount} Đang theo dõi
+                    <Link to={`/${user.username}/following`} style={{
+                        color: '#333',
+                        textDecoration: 'none',
+                        '&:hover': {
+                            textDecoration: 'underline'
+                        }
+                    }}>
+                        {user.followingCount} Đang theo dõi
+                    </Link>
                 </Typography>
                 <Typography>
                     <Link to={`/${user.username}/followers`} style={{
@@ -186,7 +200,7 @@ const UserProfile = () => {
         const handleScroll = () => {
             if (
                 window.innerHeight + document.documentElement.scrollTop
-                >= containerRef.current.offsetHeight - 100
+                >= containerRef.current?.offsetHeight - 100
             ) {
                 loadMore();
             }

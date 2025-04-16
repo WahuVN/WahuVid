@@ -50,6 +50,10 @@ const VideoPreview = ({ videoUrl, thumbnailUrl, userAva, views, likes, isViewed,
     }, [isHovered, debouncedPlay, debouncedPause]);
 
     const generateThumbnail = () => { // Hàm tạo thumbnail từ video
+        console.log(canvasRef.current, videoRef.current);
+        if (canvasRef.current == null || videoRef.current == null) {
+            return;
+        }
         const video = document.createElement('video'); // Tạo thẻ video mới
         video.src = videoUrl; // Gán URL video
         video.crossOrigin = 'anonymous'; // Cho phép truy cập cross-origin

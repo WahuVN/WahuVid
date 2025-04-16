@@ -10,6 +10,7 @@ import {
     Select,
     MenuItem,
     Chip,
+    Alert,
 } from '@mui/material';
 import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import VideoPreview from '../components/VideoPreview';
@@ -136,6 +137,9 @@ const UploadVideo = () => {
     const [videoPreviewUrl, setVideoPreviewUrl] = useState('');
     const [uploadVideo, { loading, error }] = useMutation(UPLOAD_VIDEO);
     const { data: cateData } = useQuery(GET_CATEGORIES);
+    const [videoDuration, setVideoDuration] = useState(0);
+    const [durationError, setDurationError] = useState('');
+    const videoRef = useRef(null);
 
     const handleTitleChange = useCallback((newTitle) => {
         setTitle(newTitle);
@@ -148,9 +152,32 @@ const UploadVideo = () => {
     // Hàm xử lý khi người dùng chọn file video
     const handleVideoChange = useCallback((event) => {
         const file = event.target.files[0]; // Lấy file video đầu tiên từ sự kiện
-        setVideoFile(file); // Cập nhật state để lưu file video
-        setVideoPreviewUrl(URL.createObjectURL(file)); // Tạo URL tạm thời để xem trước video
-    }, []); // Mảng rỗng để đảm bảo hàm chỉ được tạo một lần, không thay đổi
+        if (file) {
+            setVideoFile(file); // Cập nhật state để lưu file video
+            const videoUrl = URL.createObjectURL(file); // Tạo URL tạm thời để xem trước video
+            setVideoPreviewUrl(videoUrl);
+
+            // Tạo một element video tạm thời để kiểm tra thời lượng
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+
+            video.onloadedmetadata = function () {
+                window.URL.revokeObjectURL(video.src);
+                const duration = video.duration;
+                setVideoDuration(duration);
+
+                // Kiểm tra nếu video dài hơn 3 phút (180 giây)
+                if (duration > 180) {
+                    setDurationError('Video không được dài quá 3 phút');
+                    setVideoFile(null);
+                } else {
+                    setDurationError('');
+                }
+            };
+
+            video.src = videoUrl;
+        }
+    }, []);
 
     // Hàm xử lý khi người dùng chọn file ảnh thumbnail
     const handleThumbnailChange = useCallback((event) => {
@@ -159,6 +186,13 @@ const UploadVideo = () => {
 
     const handleSubmit = useCallback(async (event) => {
         event.preventDefault();
+
+        // Kiểm tra lại thời lượng video trước khi upload
+        if (videoDuration > 180) {
+            setDurationError('Video không được dài quá 3 phút');
+            return;
+        }
+
         try {
             const result = await uploadVideo({
                 variables: { title, videoFile, thumbnailFile, category, tags }
@@ -169,7 +203,7 @@ const UploadVideo = () => {
         } catch (err) {
             console.error('Error uploading video:', err);
         }
-    }, [title, videoFile, thumbnailFile, category, tags, uploadVideo, navigate]);
+    }, [title, videoFile, thumbnailFile, category, tags, uploadVideo, navigate, videoDuration]);
 
     const categories = useMemo(() => cateData ? cateData.getCategories : [], [cateData]);
 
@@ -190,14 +224,23 @@ const UploadVideo = () => {
                     onChange={handleVideoChange}
                     fileName={videoFile?.name}
                 />
-                {videoFile && (
+                {durationError && (
+                    <Alert severity="error" sx={{ mt: 1, mb: 1 }}>
+                        {durationError}
+                    </Alert>
+                )}
+                {videoFile != null && (
                     <Box sx={{ my: 2, width: '100%', display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                         <VideoPreview
                             videoUrl={videoPreviewUrl}
                             thumbnailUrl={thumbnailFile ? URL.createObjectURL(thumbnailFile) : ''}
                             onThumbnailGenerated={setThumbnailFile}
                             isMuted={false}
+                            ref={videoRef}
                         />
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                            Thời lượng: {Math.floor(videoDuration / 60)}:{Math.floor(videoDuration % 60).toString().padStart(2, '0')}
+                        </Typography>
                     </Box>
                 )}
                 <FileInput
@@ -219,7 +262,7 @@ const UploadVideo = () => {
                     type="submit"
                     variant="contained"
                     color="primary"
-                    disabled={loading || !videoFile}
+                    disabled={loading || !videoFile || !!durationError}
                     sx={{ mt: 2 }}
                 >
                     {loading ? <CircularProgress size={24} /> : 'Tải lên'}

@@ -22,6 +22,7 @@ import BulkUploadVideo from './pages/BulkUploadVideo';
 import { saveToken } from './utils/tokenUtils';
 import CreatorStats from './pages/CreatorStats';
 import Followers from './components/Followers';
+import Followings from './components/Followings';
 
 function useAuth() {
     const [searchParams] = useSearchParams();
@@ -69,7 +70,7 @@ function useAuth() {
         const { data } = await loginUser({
             variables: {
                 email: "Wahu",
-                password: "123456", 
+                password: "123456",
             },
         });
         handleLoginSuccess(data.loginUser);
@@ -185,6 +186,11 @@ function AuthenticatedApp() {
                         <Route path="/:userId/followers" element={
                             <ProtectedRoute>
                                 <Followers />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/:username/following" element={
+                            <ProtectedRoute>
+                                <Followings />
                             </ProtectedRoute>
                         } />
                     </Route>

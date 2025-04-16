@@ -122,11 +122,27 @@ const getFollowers = async (userId) => { // Hàm lấy danh sách người theo 
     return followers; // Trả về danh sách người theo dõi
 };
 
+const getFollowings = async (username) => { // Hàm lấy danh sách người theo dõi
+    const user = await models.User.findOne({
+        username: username
+    }); // Tìm người dùng theo ID
+    const follows = await models.Follow.find({ // Tìm tất cả bản ghi Follow với following là userId
+        follower: user._id
+    });
+    const following = await models.User.find({ // Tìm tất cả người dùng theo ID trong danh sách follows
+        _id: { $in: follows.map(follow => follow.following) } // Lấy ID của người dùng theo dõi
+    });
+    return following; // Trả về danh sách người theo dõi
+
+};
+
+
 export default { // Xuất các hàm dưới dạng object
     getUser,
     registerUser,
     loginUser,
     getUsersByIds,
     getUserById,
-    getFollowers
+    getFollowers,
+    getFollowings
 }

@@ -37,7 +37,7 @@ const Messenger = () => {
     });
 
     useEffect(() => {
-        if(conversationsData && conversationsData.getUserConversations){
+        if (conversationsData && conversationsData.getUserConversations) {
             setConversations(conversationsData.getUserConversations);
         }
     }, [conversationsData]);
@@ -254,7 +254,7 @@ const Messenger = () => {
                                         </ListItemAvatar>
                                         <ListItemText
                                             primary={conversation?.name ? conversation?.name : conversation?.participants[0]?.username === user.username ? conversation?.participants[1]?.username : conversation?.participants[0]?.username}
-                                            secondary={`${conversation?.lastMessage?.content}  - lúc  ${new Date(conversation?.lastMessage?.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                            secondary={conversation?.lastMessage ? `${conversation?.lastMessage?.content}  - lúc  ${new Date(conversation?.lastMessage?.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : null}
                                         />
                                     </ListItemButton>
                                 ))
