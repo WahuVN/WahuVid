@@ -12,6 +12,7 @@ const typeDefs = gql`
     followerCount: Int!
     followingCount: Int!
     isFollowed: Boolean
+    role: String!
   }
 
   type FollowConnection {
@@ -242,6 +243,7 @@ const typeDefs = gql`
     markMessageAsRead(messageId: ID!): Boolean!
     getOrCreateDirectConversation(userId: String!): Conversation!
     markNotificationAsRead(notificationId: ID!): Notification!
+    deleteVideo(videoId: ID!): Boolean!
   }
 
   type Subscription {

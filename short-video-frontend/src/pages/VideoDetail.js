@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'; // Nhập các hook từ React
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'; // Nhập các hook từ React
 import { useQuery, useMutation } from '@apollo/client'; // Nhập hook để thực hiện truy vấn và mutation từ Apollo Client
 import { useLocation, useNavigate, useParams } from 'react-router-dom'; // Nhập hook để điều hướng và lấy tham số từ URL
 import {
@@ -12,24 +12,32 @@ import {
     CardContent,
     useMediaQuery,
     useTheme,
-    Divider
+    Divider,
+    Menu,
+    MenuItem,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
 } from '@mui/material'; // Nhập các component từ Material-UI
 import {
     Bookmark,
     BookmarkBorder,
     Close,
 } from '@mui/icons-material'; // Nhập icon từ Material-UI
-import { ChevronDown, ChevronUp, Heart, MessageSquareMore, Play, Send, Volume2, VolumeX, X } from 'lucide-react'; // Nhập icon từ Lucide
+import { ChevronDown, ChevronUp, Ellipsis, Flag, Heart, MessageSquareMore, Play, Send, Trash, Volume2, VolumeX, X } from 'lucide-react'; // Nhập icon từ Lucide
 import { FOLLOW_USER, UNFOLLOW_USER } from '../GraphQLQueries/followQueries'; // Nhập truy vấn GraphQL để follow/unfollow người dùng
 import moment from 'moment'; // Nhập thư viện moment để xử lý thời gian
 import 'moment/locale/vi'; // Đặt ngôn ngữ moment thành tiếng Việt
 import { SAVE_VIDEO, UNSAVE_VIDEO } from '../GraphQLQueries/saveQueries'; // Nhập truy vấn để lưu/hủy lưu video
 import { VIEW_VIDEO } from '../GraphQLQueries/viewQueries'; // Nhập truy vấn để ghi nhận lượt xem video
-import { GET_VIDEO_DETAILS } from '../GraphQLQueries/videoQueries'; // Nhập truy vấn để lấy chi tiết video
+import { DELETE_VIDEO, GET_VIDEO_DETAILS } from '../GraphQLQueries/videoQueries'; // Nhập truy vấn để lấy chi tiết video
 import { LIKE_VIDEO, UNLIKE_VIDEO } from '../GraphQLQueries/likeQueries'; // Nhập truy vấn để thích/bỏ thích video
 import LikeAnimation from '../components/LikeAnimation'; // Nhập component animation khi thích video
 import CommentList from '../components/CommentList'; // Nhập component danh sách bình luận
 import LargeNumberDisplay from '../components/LargeNumberDisplay'; // Nhập component hiển thị số lớn
+import UserContext from '../contexts/userContext';
 moment.locale('vi'); // Áp dụng ngôn ngữ tiếng Việt cho moment
 
 const DEFAULT_ASPECT_RATIO = 9 / 16; // Tỷ lệ khung hình mặc định của video (9:16)
@@ -52,6 +60,8 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
     const videoContainerRef = useRef(null); // Ref tham chiếu đến container của video
     const touchStartY = useRef(null); // Ref lưu vị trí Y khi bắt đầu chạm (dùng cho mobile)
     const lastScrollTime = useRef(0); // Ref lưu thời gian cuộn cuối cùng
+    const { user } = useContext(UserContext);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false); // State kiểm tra dialog xóa có mở không
 
     const navigate = useNavigate(); // Hook để điều hướng trang
     const location = useLocation(); // Hook để lấy thông tin vị trí URL hiện tại
@@ -60,6 +70,7 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
     const { data: videoData, loading: videoLoading, error: videoError } = useQuery(GET_VIDEO_DETAILS, {
         variables: { id }, // Truyền ID video vào truy vấn
     });
+    const [deleteVideo] = useMutation(DELETE_VIDEO);
 
     // Khai báo các mutation để thực hiện các hành động
     const [likeVideo] = useMutation(LIKE_VIDEO); // Mutation thích video
@@ -77,6 +88,9 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
     const timeWatchedRef = useRef(0); // Ref lưu tổng thời gian đã xem video
     const lastUpdateTimeRef = useRef(0); // Ref lưu thời gian cập nhật cuối cùng
     const viewCountedRef = useRef(false); // Ref kiểm tra lượt xem đã được đếm chưa
+    const [anchorEl, setAnchorEl] = useState(null); // State lưu trữ phần tử menu
+    const [isMenuOpen, setIsMenuOpen] = useState(false); // State kiểm tra menu có mở không
+
 
     // Hàm thử tự động phát video
     const attemptAutoplay = () => {
@@ -435,6 +449,27 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
         event.preventDefault();
     };
 
+    const handleOpenDeleteDialog = () => {
+        setOpenDeleteDialog(true);
+        setAnchorEl(null);
+    };
+
+    const handleCloseDeleteDialog = () => {
+        setOpenDeleteDialog(false);
+    };
+
+    const handleDeleteVideo = async () => {
+        try {
+            await deleteVideo({ variables: { videoId: id } });
+            // navigate không tự động refresh trang vì nó chỉ thay đổi URL và render component mới
+            // mà không tải lại toàn bộ trang. Đây là cách hoạt động của Single Page Application (SPA)
+            // Để đảm bảo dữ liệu mới được tải, ta có thể sử dụng window.location.href thay vì navigate
+            window.location.href = `/${video.user.username}`;
+        } catch (error) {
+            console.error("Lỗi khi xóa video:", error);
+        }
+    }
+
 
     return (
         <Box sx={{ flexGrow: 1 }}>
@@ -594,13 +629,51 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
                                 <Box display="flex" alignItems="center">
                                     <Avatar src={video.user.profilePicture} sx={{ width: 40, height: 40, mr: 1 }} />
                                     <Typography variant="subtitle1">{video.user.username}</Typography>
+                                    {video.user.username !== user.username && (
+                                        <Button
+                                            variant={localIsFollowed ? 'outlined' : 'contained'}
+                                            onClick={localIsFollowed ? handleUnfollowUser : handleFollowUser}
+                                            sx={{ ml: 1 }}
+                                        >
+                                            {localIsFollowed ? 'Hủy theo dõi' : 'Theo dõi'}
+                                        </Button>
+                                    )}
                                 </Box>
-                                <Button
-                                    variant={localIsFollowed ? 'outlined' : 'contained'}
-                                    onClick={localIsFollowed ? handleUnfollowUser : handleFollowUser}
+                                <IconButton
+                                    sx={{
+                                        mt: 1
+                                    }}
+                                    onClick={(event) => setAnchorEl(event.currentTarget)}
                                 >
-                                    {localIsFollowed ? 'Hủy theo dõi' : 'Theo dõi'}
-                                </Button>
+                                    <Ellipsis size={24} style={{
+                                        color: theme.palette.text.secondary,
+                                    }} />
+                                </IconButton>
+                                <Menu
+                                    anchorEl={anchorEl}
+                                    open={Boolean(anchorEl)}
+                                    onClose={() => setAnchorEl(null)}
+                                    PaperProps={{
+                                        elevation: 0,
+                                        sx: {
+                                            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                                            mt: 1.5,
+                                        },
+                                    }}
+                                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                                >
+                                    {(video.user.username === user.username || user.role === 'admin') && (
+                                        <MenuItem onClick={handleOpenDeleteDialog}>
+                                            <Trash size={16} />
+                                            <Box sx={{ marginLeft: 1 }}>Xoá video</Box>
+                                        </MenuItem>
+                                    )}
+                                    <MenuItem onClick={() => setAnchorEl(null)}>
+                                        <Flag size={16} />
+                                        <Box sx={{ marginLeft: 1 }}>Báo cáo</Box>
+                                    </MenuItem>
+                                </Menu>
                             </Box>
                             <Box sx={{
                                 maxHeight: '3em',
@@ -657,6 +730,23 @@ const VideoDetailPage = ({ handleFollowUserParent = () => { }, handleUnfollowUse
                     <CommentList videoId={id} isDetails={true} />
                 </Grid>
             </Grid>
+            <Dialog
+                open={openDeleteDialog}
+                onClose={handleCloseDeleteDialog}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">Xóa video {video.title}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Bạn có chắc chắn muốn xóa video này không?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDeleteDialog}>Hủy</Button>
+                    <Button onClick={handleDeleteVideo} color="error">Xóa</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

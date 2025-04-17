@@ -216,3 +216,8 @@ export const GET_VIDEOS_BY_CATEGORY = gql`
   }
 `;
 
+export const DELETE_VIDEO = gql`
+  mutation DeleteVideo($videoId: ID!) {
+    deleteVideo(videoId: $videoId)
+  }
+`;

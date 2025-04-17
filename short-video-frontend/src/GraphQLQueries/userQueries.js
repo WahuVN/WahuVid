@@ -7,6 +7,7 @@ export const VERIFY_TOKEN = gql`
       username
       email
       profilePicture
+      role
     }
   }
 `;
@@ -48,6 +49,7 @@ export const LOGIN_USER = gql`
         username
         email
         profilePicture
+        role
       }
     }
   }

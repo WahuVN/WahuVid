@@ -197,6 +197,7 @@ const UploadVideo = () => {
             const result = await uploadVideo({
                 variables: { title, videoFile, thumbnailFile, category, tags }
             });
+            // console.log(result.data);
             const uploadedVideoId = result.data.uploadVideo.id;
             const uname = result.data.uploadVideo.user.username;
             navigate(`/${uname}/video/${uploadedVideoId}`);

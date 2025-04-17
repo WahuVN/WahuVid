@@ -148,7 +148,7 @@ const resolvers = { // Định nghĩa các resolver cho GraphQL
             }
             const video = await videoService.uploadVideo(context.user.id, title, videoFile, thumbnailFile, category, tags); // Gọi dịch vụ tải video
             if (video) { // Nếu tải video thành công
-                const followers = await userService.getFollowers(context.user.id); // Lấy danh sách người theo dõi
+                const followers = await userService.getFollowersByUserId(context.user.id); // Lấy danh sách người theo dõi
 
                 for (const follower of followers) { // Duyệt qua từng người theo dõi
                     const { notification, user } = await notificationService.createVideoUploadNotification(video, context.user.id, follower.follower.toString()); // Tạo thông báo tải video
@@ -329,7 +329,13 @@ const resolvers = { // Định nghĩa các resolver cho GraphQL
             if (!user) throw new Error('Bạn phải đăng nhập để đánh dấu thông báo này đã đọc'); // Ném lỗi nếu chưa đăng nhập
             return notificationService.markNotificationAsRead(notificationId, user.id); // Gọi dịch vụ đánh dấu đã đọc
         },
+        deleteVideo: async (_, { videoId }, { user, tokenError }) => { // Xóa video
+            if (tokenError) throw new Error(tokenError); // Ném lỗi nếu có lỗi token
+            if (!user) throw new Error('Bạn phải đăng nhập để xóa video'); // Ném lỗi nếu chưa đăng nhập
+            return videoService.deleteVideo(videoId, user.id); // Gọi dịch vụ xóa video
+        },
     },
+
     User: { // Resolver cho đối tượng User
         isFollowed: async (parent, _, context) => { // Kiểm tra xem người dùng đã được theo dõi chưa
             if (!context.user) { // Nếu chưa đăng nhập

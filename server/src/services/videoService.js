@@ -505,6 +505,56 @@ const getRecommendedVideosNotLoggedIn = async (limit) => {
     }
 };
 
+// Hàm xóa video
+const deleteVideo = async (videoId, userId) => {
+    try {
+        const user = await models.User.findById(userId);
+        const video = await models.Video.findById(videoId);
+        if (!video) {
+            throw new Error('Video not found');
+        }
+        if (video.user.toString() !== userId && user.role !== 'admin') {
+            throw new Error('Bạn không có quyền xóa video này');
+        }
+
+        // Xóa tất cả comment liên quan đến video
+        await models.Comment.deleteMany({ video: videoId });
+
+        // Lấy danh sách tất cả comment của video để xóa like
+        const comments = await models.Comment.find({ video: videoId });
+        const commentIds = comments.map(comment => comment._id);
+
+        // Xóa tất cả lượt thích của các comment
+        if (commentIds.length > 0) {
+            await models.Like.deleteMany({ target: { $in: commentIds }, type: 'Comment' });
+        }
+
+        // Xóa tất cả thông báo liên quan đến video
+        await models.Notification.deleteMany({ video: videoId });
+
+        // Xóa tất cả thông báo liên quan đến comment trong video
+        if (commentIds.length > 0) {
+            await models.Notification.deleteMany({ comment: { $in: commentIds } });
+        }
+
+        // Xóa tất cả lượt xem của video
+        await models.View.deleteMany({ video: videoId });
+
+        // Xóa tất cả lượt thích của video
+        await models.Like.deleteMany({ target: videoId, type: 'Video' });
+
+        // Xóa tất cả lượt lưu của video
+        await models.Save.deleteMany({ video: videoId });
+
+        // Xóa video
+        await video.deleteOne();
+        return true;
+    } catch (error) {
+        console.error('Error deleting video:', error);
+        throw new Error('An error occurred while deleting video');
+    }
+};
+
 // Xuất các hàm để sử dụng trong các file khác
 export default {
     getVideo,
@@ -520,4 +570,5 @@ export default {
     getFollowingVideos,
     getFriendVideos,
     getVideosByCategory,
+    deleteVideo
 };
